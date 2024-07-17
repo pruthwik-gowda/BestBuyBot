@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "chromedriver": "^126.0.4",
+    "fast-levenshtein": "^3.0.0",
     "geckodriver": "^4.4.1",
     "selenium-webdriver": "^4.22.0"
   }
