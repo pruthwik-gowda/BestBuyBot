@@ -71,7 +71,7 @@ const scrapeAmazon = async (productName) => {
                 //console.log("checking");
                 if(isSetContained(extractNumbersToSet(title), extractNumbersToSet(productName))){
                     let distance = levenshtein.get(productName.toLowerCase(), title.toLowerCase());
-                    console.log(`Title: ${title}`);
+                    console.log(`Title: ${title} - ${distance}`);
                     if (distance < minDistance) {
                         minDistance = distance;
                         bestMatch = product;
@@ -88,6 +88,7 @@ const scrapeAmazon = async (productName) => {
             let price = await priceElement.getAttribute("innerHTML");
             let titleElement = await bestMatch.findElement(By.css('h2 a span'));
             let title = await titleElement.getText();
+            console.log(title);
             return `${title} - ₹${price}`;
         }
     } catch (err) {
@@ -140,9 +141,17 @@ const scrapeFlipkart = async (productName) => {
         console.log(products.length)
         }
         catch(err){
-            await driver.wait(until.elementLocated(By.css('._75nlfW')), 1000);
-            products = await driver.findElements(By.css('._75nlfW'));
-            console.log(products.length)
+            try{
+                await driver.wait(until.elementLocated(By.css('._1sdMkc')), 1000);
+                products = await driver.findElements(By.css('._1sdMkc'));
+                console.log(products.length)
+            }
+            catch(err){
+                await driver.wait(until.elementLocated(By.css('._75nlfW')), 1000);
+                products = await driver.findElements(By.css('._75nlfW'));
+                console.log(products.length)
+            }
+            
         }
         
 
@@ -157,14 +166,20 @@ const scrapeFlipkart = async (productName) => {
                     title = await titleElement.getText();
                 }
                 catch(err){
-                    let titleElement = await product.findElement(By.css('.wjcEIp'));
-                    title = await titleElement.getText();
+                    try{
+                        let titleElement = await product.findElement(By.css('.WKTcLC'));
+                        title = await titleElement.getText();
+                    }
+                    catch(err){
+                        let titleElement = await product.findElement(By.css('.wjcEIp'));
+                        title = await titleElement.getText();
+                    }
                 }
-                console.log("checking");
-                console.log(`Title: ${title} - productName: ${productName}`);
+                //console.log("checking");
+                //console.log(`Title: ${title} - productName: ${productName}`);
                 if(isSetContained(extractNumbersToSet(title), extractNumbersToSet(productName))){
                     let distance = levenshtein.get(productName.toLowerCase(), title.toLowerCase());
-                    console.log(`Title: ${title} - ${distance}`);
+                    //console.log(`Title: ${title} - ${distance}`);
                     if (distance < minDistance) {
                         minDistance = distance;
                         bestMatch = product;
@@ -185,8 +200,14 @@ const scrapeFlipkart = async (productName) => {
                 title = await titleElement.getText();
             }
             catch(err){
-                let titleElement = await bestMatch.findElement(By.css('.wjcEIp'));
-                title = await titleElement.getText();
+                try{
+                    let titleElement = await bestMatch.findElement(By.css('.WKTcLC'));
+                    title = await titleElement.getText();
+                }
+                catch(err){
+                    let titleElement = await bestMatch.findElement(By.css('.wjcEIp'));
+                    title = await titleElement.getText();
+                }
             }
             
             return `${title} - ₹${price}`;
@@ -201,7 +222,7 @@ const scrapeFlipkart = async (productName) => {
 }
 
 const main = async () => {
-    let productName = 'apple iphone 15 pro max 256 gb titanium'; // Replace with the desired product
+    let productName = '15 pro max 256 b titanium'; // Replace with the desired product
 
     let somethingElse = await scrapeFlipkart(productName);
 
