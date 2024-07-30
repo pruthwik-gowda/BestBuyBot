@@ -1,7 +1,7 @@
 const { Builder, By, until, Key } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 const levenshtein = require('fast-levenshtein');
-const run = require('./googleApiTest'); 
+const run = require('./runPrompt'); 
 
 
 const scrapeAmazon = async (productName) => {
