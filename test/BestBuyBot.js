@@ -1,6 +1,7 @@
 const { Builder, By, until, Key } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 const levenshtein = require('fast-levenshtein');
+const run = require('./googleApiTest'); 
 
 function extractNumbersToSet(inputString) {
     // Use a regular expression to match all sequences of digits
@@ -222,14 +223,15 @@ const scrapeFlipkart = async (productName) => {
 }
 
 const main = async () => {
-    let productName = '15 pro max 256 b titanium'; // Replace with the desired product
+    // let productName = '15 pro max 256 b titanium'; // Replace with the desired product
 
-    let somethingElse = await scrapeFlipkart(productName);
+    // let somethingElse = await scrapeFlipkart(productName);
 
-    let something = await scrapeAmazon(productName);
+    // let something = await scrapeAmazon(productName);
 
-    console.log(`Amazon Price for ${something}`);
-    console.log(`flipkart Price for ${somethingElse}`);
+    // console.log(`Amazon Price for ${something}`);
+    // console.log(`flipkart Price for ${somethingElse}`);
+    run("say hello")
 };
 
 main()
