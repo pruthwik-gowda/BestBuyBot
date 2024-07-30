@@ -2,10 +2,8 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { API_KEY } = require('../config');
 
 let apiKey = API_KEY;
-console.log('Loaded API_KEY:', apiKey);
 
 const genAI = new GoogleGenerativeAI(apiKey);
-
 
 async function run(prompt) {
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
