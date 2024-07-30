@@ -12,6 +12,7 @@
   "dependencies": {
     "@google/generative-ai": "^0.16.0",
     "chromedriver": "^126.0.4",
+    "dotenv": "^16.4.5",
     "fast-levenshtein": "^3.0.0",
     "geckodriver": "^4.4.1",
     "selenium-webdriver": "^4.22.0"

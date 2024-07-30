@@ -4,6 +4,7 @@ const levenshtein = require('fast-levenshtein');
 const run = require('./runPrompt'); 
 
 
+
 const scrapeAmazon = async (productName) => {
     let driver = await new Builder().forBrowser('chrome').build();
     await driver.get('https://www.amazon.in/');
