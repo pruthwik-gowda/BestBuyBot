@@ -16,14 +16,18 @@ const scrapeAmazon = async (productName) => {
 
         let bestMatch = null;
 
-        let prompt = `I have searched for a product in the search bar using the keys "${productName}". I want you to return the most similar product's title of all the product titles that i'll send u in this message. These are the titles`
+        let prompt = `I have searched for a product in the search bar using the keys "${productName}". I want you to return the most similar product's title of all the product titles and corresponding price that i'll send u in this message. The products are will be seperated by "------" and the title has with it it's price which his seperated from the title by "---". Here's an example pf how this looks ------ product1-title --- product1-price ------ product2-title --- product2-price ------ . Anthing (other than the price) between these lines (------ and ---) is a title....be it characters, be it anything. Even trailing "..." is considered a title, so return that as well. These are the titles ------ `
 
         for (let product of products) {
             try {
                 
                 let titleElement = await product.findElement(By.css('h2 a span'));
                 let title = await titleElement.getText();
-                prompt += title + ", "
+
+                let priceElement = await product.findElement(By.css('.a-price-whole'));
+                let price = await priceElement.getText();
+
+                prompt += title + " --- " + price
             } catch (err) {
                 // Ignore products that do not have the necessary elements
             }
@@ -31,30 +35,41 @@ const scrapeAmazon = async (productName) => {
 
         
 
-        prompt += ". Now thats all the product titles. If u dont find the exact product's title, return the most similar product title. I want u to return JUST the product title of the similar product as is. Don't even give me a label...Just the title. No * also"
-        bestMatch = await run(prompt)
-        bestMatch = bestMatch.trim();
+        prompt += ". Now thats all the product titles and corresponding prices. I want u to return JUST the product title (as title) the most similar product as is. So you have to return one variable, title. Don't return the price. The product most be chosen such that if there are multiple similar products, chose the one with the lowest price. You HAVE to return a title. Don't even give me a label...Just the title. No * also."
         //console.log(prompt)
+        title = await run(prompt)
         
-        //console.log(bestMatch?"yes":"no")
+        let promptPrice = `this is the previous query - "${prompt}" . You returned the title as "${title}". Now i want you to return the PRICE of the the product you returned as the answer for the previous query. Not the title.`
+        price = await run(promptPrice);
 
-        for (let product of products) {
-            let title;
-            let titleElement = await product.findElement(By.css('h2 a span'));
-            title = await titleElement.getText();
+        return `${title} --- ${price}`
+
+
+        
+        // console.log(bestMatch)
+        // //
+        // bestMatch = bestMatch.trim();
+        // //console.log(prompt)
+        
+        // //console.log(bestMatch?"yes":"no")
+
+        // for (let product of products) {
+        //     let title;
+        //     let titleElement = await product.findElement(By.css('h2 a span'));
+        //     title = await titleElement.getText();
             
             
-            // console.log(title);
-            // console.log(bestMatch)
-            if (title.trim().toLowerCase() == bestMatch.toLowerCase()) {
-                let priceElement = await product.findElement(By.css('.a-price-whole'));
-                let price = await priceElement.getText();
-                return `${title} --- ${price}`;
-            }else{
-                return `product out of stock`
-            }
-        }
-        return null;
+        //     // console.log(title);
+        //     // console.log(bestMatch)
+        //     if (title.trim().toLowerCase() == bestMatch.toLowerCase()) {
+        //         console.log(bestMatch)
+        //         let priceElement = await product.findElement(By.css('.a-price-whole'));
+        //         let price = await priceElement.getText();
+        //         return `${title} --- ${price}`;
+        //     }
+        // }
+        // return null;
+        
 
     } catch (err) {
         console.error('Error finding Amazon price:', err);
@@ -70,8 +85,71 @@ const scrapeCroma = async (productName) => {
 
 
     try {
-        await driver.wait(until.elementLocated(By.css('.product-item')), 20000);
+        await driver.wait(until.elementLocated(By.css('.product-item')), 1000);
         let products = await driver.findElements(By.css('.product-item'));
+
+        let bestMatch = null;
+
+        let prompt = `I have searched for a product in the search bar using the keys "${productName}". I want you to return the most similar product's title of all the product titles and corresponding price that i'll send u in this message. The products are will be seperated by "------" and the title has with it it's price which his seperated from the title by "---". Here's an example pf how this looks ------ product1-title --- product1-price ------ product2-title --- product2-price ------ . Anthing (other than the price) between these lines (------ and ---) is a title....be it characters, be it anything. Even trailing "..." is considered a title, so return that as well. These are the titles ------ `
+
+        for (let product of products) {
+            try {
+                
+                let titleElement = await product.findElement(By.css('.product-title'));
+                let title = await titleElement.getText();
+
+                let priceElement = await product.findElement(By.css('.amount'));
+                let price = await priceElement.getText();
+
+                prompt += title + " --- " + price
+            } catch (err) {
+                // Ignore products that do not have the necessary elements
+            }
+        }
+
+        
+
+        prompt += ". Now thats all the product titles and corresponding prices. I want u to return JUST the product title (as title) and the corresponding price of the most similar product (as price) as is. So you have to return two variables, title and price. The product most be chosen such that if there are multiple similar products, chose the one with the lowest price. You HAVE to return a title. Don't even give me a label...Just the title. No * also."
+        bestMatch = await run(prompt)
+        return `${bestMatch}`
+
+        // bestMatch = bestMatch.trim();
+        // //console.log(prompt)
+        
+        // //console.log(bestMatch?"yes":"no")
+
+        // for (let product of products) {
+        //     let title;
+        //     let titleElement = await product.findElement(By.css('.product-title'));
+        //     title = await titleElement.getText();
+            
+            
+        //     // console.log(title);
+        //     // console.log(bestMatch)
+        //     if (title.trim().toLowerCase() == bestMatch.toLowerCase()) {
+        //         let priceElement = await product.findElement(By.css('.amount'));
+        //         let price = await priceElement.getText();
+        //         return `${title} --- ${price}`;
+        //     }
+        // }
+        return null;
+
+    } catch (err) {
+        console.error('Error finding Croma price:', err);
+    } finally {
+        await driver.quit();
+    }
+}
+
+const scrapeReliance = async (productName) => {
+    let driver = await new Builder().forBrowser('chrome').build();
+    await driver.get('https://www.reliancedigital.in/');
+    await driver.findElement(By.xpath('//*[@id="suggestionBoxEle"]')).sendKeys(productName, Key.RETURN);
+
+
+    try {
+        await driver.wait(until.elementLocated(By.css('.pl__container__sp')), 20000);
+        let products = await driver.findElements(By.css('.pl__container__sp'));
 
         let bestMatch = null;
 
@@ -80,7 +158,7 @@ const scrapeCroma = async (productName) => {
         for (let product of products) {
             try {
                 
-                let titleElement = await product.findElement(By.css('.product-title'));
+                let titleElement = await product.findElement(By.css('.sp__name'));
                 let title = await titleElement.getText();
                 prompt += title + ", "
             } catch (err) {
@@ -90,7 +168,7 @@ const scrapeCroma = async (productName) => {
 
         
 
-        prompt += ". Now thats all the product titles. If u dont find the exact product's title, return the most similar product title. I want u to return JUST the product title of the similar product as is. Don't even give me a label...Just the title. No * also"
+        prompt += ". Now thats all the product titles and corresponding prices. I want u to return JUST the product title (as title) and the corresponding price of the most similar product (as price) as is. So you have to return two variables, title and price. The product most be chosen such that if there are multiple similar products, chose the one with the lowest price. You HAVE to return a title. Don't even give me a label...Just the title. No * also."
         bestMatch = await run(prompt)
         bestMatch = bestMatch.trim();
         //console.log(prompt)
@@ -99,14 +177,14 @@ const scrapeCroma = async (productName) => {
 
         for (let product of products) {
             let title;
-            let titleElement = await product.findElement(By.css('.product-title'));
+            let titleElement = await product.findElement(By.css('.sp__name'));
             title = await titleElement.getText();
             
             
             // console.log(title);
             // console.log(bestMatch)
             if (title.trim().toLowerCase() == bestMatch.toLowerCase()) {
-                let priceElement = await product.findElement(By.css('.amount'));
+                let priceElement = await product.findElement(By.css('.gimCrs'));
                 let price = await priceElement.getText();
                 return `${title} --- ${price}`;
             }else{
@@ -116,7 +194,7 @@ const scrapeCroma = async (productName) => {
         return null;
 
     } catch (err) {
-        console.error('Error finding Croma price:', err);
+        console.error('Error finding reliance digital price:', err);
     } finally {
         await driver.quit();
     }
@@ -154,7 +232,7 @@ const scrapeFlipkart = async (productName) => {
         let bestMatch = null;
 
 
-        let prompt = `I have searched for a product in the search bar using the keys "${productName}". I want you to return the most similar product's title of all the product titles that i'll send u in this message. These are the titles`
+        let prompt = `I have searched for a product in the search bar using the keys "${productName}". I want you to return the most similar product's title of all the product titles and corresponding price that i'll send u in this message. The products are will be seperated by "------" and the title has with it it's price which his seperated from the title by "---". Here's an example pf how this looks ------ product1-title --- product1-price ------ product2-title --- product2-price ------ . Anthing (other than the price) between these lines (------ and ---) is a title....be it characters, be it anything. Even trailing "..." is considered a title, so return that as well. These are the titles ------ `
 
         for (let product of products) {
             try {
@@ -173,8 +251,11 @@ const scrapeFlipkart = async (productName) => {
                         title = await titleElement.getText();
                     }
                 }
+
+                let priceElement = await product.findElement(By.css('.Nx9bqj'));
+                let price = await priceElement.getText();
                 
-                prompt += title + ", "
+                prompt += title + " --- " + price
                 //console.log(prompt)
 
             } catch (err) {
@@ -183,58 +264,65 @@ const scrapeFlipkart = async (productName) => {
             }
         }
 
-        prompt += ". Now thats all the product titles. I want u to return JUST the product title  of the similar product as is. You HAVE to return a title. Don't even give me a label...Just the title. No * also"
-        bestMatch = await run(prompt)
-        bestMatch = bestMatch.trim();
-        //console.log(prompt)
-        
-        //console.log(bestMatch)
+        prompt += ". Now thats all the product titles and corresponding prices. I want u to return JUST the product title (as title) the most similar product as is. So you have to return one variable, title. Don't return the price. The product most be chosen such that if there are multiple similar products, chose the one with the lowest price. You HAVE to return a title. Don't even give me a label...Just the title. No * also."
+        title = await run(prompt)
+        let promptPrice = `this is the previous query - "${prompt}" . You returned the title as "${title}". Now i want you to return the PRICE of the the product you returned as the answer for the previous query. Not the title.`
+        price = await run(promptPrice);
+        return `${title} --- ${price}`
+        console.log(`${title} --- ${price}`)
 
-        for (let product of products) {
-            let title;
-            try {
-                let titleElement = await product.findElement(By.css('.KzDlHZ'));
-                title = await titleElement.getText();
-            } catch (err) {
-                try {
-                    let titleElement = await product.findElement(By.css('.WKTcLC'));
-                    title = await titleElement.getText();
-                } catch (err) {
-                    let titleElement = await product.findElement(By.css('.wjcEIp'));
-                    title = await titleElement.getText();
-                }
-            }
+
+        // bestMatch = bestMatch.trim();
+        // //console.log(prompt)
+        
+        // console.log(bestMatch)
+
+        // for (let product of products) {
+        //     let title;
+        //     try {
+        //         let titleElement = await product.findElement(By.css('.KzDlHZ'));
+        //         title = await titleElement.getText();
+        //     } catch (err) {
+        //         try {
+        //             let titleElement = await product.findElement(By.css('.WKTcLC'));
+        //             title = await titleElement.getText();
+        //         } catch (err) {
+        //             let titleElement = await product.findElement(By.css('.wjcEIp'));
+        //             title = await titleElement.getText();
+        //         }
+        //     }
             
-            // console.log(title);
-            // console.log(bestMatch)
-            if (title.trim().toLowerCase() == bestMatch.toLowerCase()) {
-                let priceElement = await product.findElement(By.css('.Nx9bqj'));
-                let price = await priceElement.getText();
-                return `${title} --- ${price}`;
-            }
-        }
+        //      console.log(title);
+        //     // console.log(bestMatch)
+        //     if (title.trim().toLowerCase() == bestMatch.toLowerCase()) {
+        //         console.log("here")
+        //         let priceElement = await product.findElement(By.css('.Nx9bqj'));
+        //         let price = await priceElement.getText();
+        //         return `${title} --- ${price}`;
+        //     }
+        // }
         return null;
 
     } catch (err) {
         console.error('Error finding Flipkart price:', err);
     } finally {
         await driver.quit();
-    }
-
-    
+    }    
 }
 
 const main = async () => {
     
-    let productName = 'samsung s24 ultra 512 gb'; // Replace with the desired product
+    let productName = 'iphone 15 pro max 512 gb'; // Replace with the desired product
 
-    let flipkart = await scrapeAmazon(productName);
-    let amazon = await scrapeFlipkart(productName);
-    let croma = await scrapeCroma(productName);
+    //let amazon = await scrapeAmazon(productName);
+    let flipkart = await scrapeFlipkart(productName);
+    //let croma = await scrapeCroma(productName);
+    // let reliance = await scrapeReliance(productName);
 
-    console.log(`Amazon Price for ${amazon}`);
+    //console.log(`Amazon Price for ${amazon}`);
     console.log(`flipkart Price for ${flipkart}`);
-    console.log(`Croma Price for ${croma}`);
+    //console.log(`Croma Price for ${croma}`);
+    //console.log(`Reliance Digital Price for ${reliance}`);
 };
 
 main()
